@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberLabX - Lab Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@24.0.0/dist/keycloak.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .role-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .role-user {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-success {
+            background: #4ecdc4;
+            color: #1a1a2e;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-box h1 {
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+
+        .login-box p {
+            margin-bottom: 2rem;
+            color: #888;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            border-bottom: 2px solid #00d4ff;
+            padding-bottom: 0.5rem;
+        }
+
+        .lab-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .lab-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .lab-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+        }
+
+        .lab-card h4 {
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .lab-card p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .active-labs {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lab-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lab-item:last-child {
+            border-bottom: none;
+        }
+
+        .lab-item .lab-url {
+            color: #4ecdc4;
+            text-decoration: none;
+        }
+
+        .lab-item .lab-url:hover {
+            text-decoration: underline;
+        }
+
+        .lab-item .timer {
+            color: #ff6b6b;
+            font-family: monospace;
+        }
+
+        .access-denied {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .access-denied h2 {
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid #4ecdc4;
+            color: #4ecdc4;
+        }
+
+        .message.error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🔐 CyberLabX</div>
+        <div class="user-info" id="userInfo" style="display: none;">
+            <span id="userName"></span>
+            <span class="role-badge" id="userRole"></span>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h1>🔬 CyberLabX</h1>
+            <p>Security Lab Management Platform</p>
+            <button class="btn btn-primary" onclick="login()" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+                🔑 Login with Keycloak
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard (shown after login) -->
+    <div id="dashboard" class="dashboard container">
+        <div id="message" class="message"></div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="hidden">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Labs</h3>
+                    <div class="value" id="activeLabsCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Available Templates</h3>
+                    <div class="value" id="templatesCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Your Role</h3>
+                    <div class="value" style="font-size: 1.5rem; color: #ff6b6b;">ADMIN</div>
+                </div>
+            </div>
+
+            <h2 class="section-title">🚀 Create New Lab</h2>
+            <div class="lab-templates" id="labTemplates">
+                <div class="loading">Loading templates...</div>
+            </div>
+
+            <h2 class="section-title">📊 Active Labs</h2>
+            <div class="active-labs" id="activeLabs">
+                <div class="loading">Loading active labs...</div>
+            </div>
+        </div>
+
+        <!-- User Dashboard (limited access) -->
+        <div id="userDashboard" class="hidden">
+            <div class="access-denied">
+                <h2>⚠️ Limited Access</h2>
+                <p>You have <strong>USER</strong> role. Only administrators can create and manage labs.</p>
+                <p style="margin-top: 1rem; color: #888;">Contact your administrator for elevated access.</p>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 2rem;">📊 Active Labs (View Only)</h2>
+            <div class="active-labs" id="userActiveLabs">
+                <div class="loading">Loading active labs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Update these values based on your deployment
+        const CONFIG = {
+            keycloakUrl: 'http://localhost:8080',
+            keycloakRealm: 'cyberlabx',
+            keycloakClientId: 'cyberlabx-web',
+            kongUrl: 'http://localhost:18000'
+        };
+
+        let keycloak = null;
+        let userRole = 'user';
+
+        // Initialize Keycloak
+        async function initKeycloak() {
+            keycloak = new Keycloak({
+                url: CONFIG.keycloakUrl,
+                realm: CONFIG.keycloakRealm,
+                clientId: CONFIG.keycloakClientId
+            });
+
+            try {
+                const authenticated = await keycloak.init({
+                    onLoad: 'check-sso',
+                    silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+                    checkLoginIframe: false
+                });
+
+                if (authenticated) {
+                    onLoginSuccess();
+                }
+            } catch (error) {
+                console.error('Keycloak init failed:', error);
+                showMessage('Keycloak connection failed. Make sure Keycloak is running.', 'error');
+            }
+        }
+
+        function login() {
+            if (keycloak) {
+                keycloak.login();
+            } else {
+                showMessage('Keycloak not initialized', 'error');
+            }
+        }
+
+        function logout() {
+            if (keycloak) {
+                keycloak.logout({
+                    redirectUri: window.location.origin
+                });
+            }
+        }
+
+        function onLoginSuccess() {
+            // Extract user info
+            const tokenParsed = keycloak.tokenParsed;
+            const username = tokenParsed.preferred_username || 'Unknown';
+            
+            // Extract roles
+            const realmRoles = tokenParsed.realm_access?.roles || [];
+            const clientRoles = tokenParsed.resource_access?.[CONFIG.keycloakClientId]?.roles || [];
+            const allRoles = [...realmRoles, ...clientRoles];
+
+            // Determine primary role
+            if (allRoles.includes('admin')) {
+                userRole = 'admin';
+            } else {
+                userRole = 'user';
+            }
+
+            // Update UI
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userName').textContent = username;
+            
+            const roleElement = document.getElementById('userRole');
+            roleElement.textContent = userRole.toUpperCase();
+            roleElement.className = `role-badge role-${userRole}`;
+
+            // Show appropriate dashboard
+            if (userRole === 'admin') {
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadTemplates();
+                loadActiveLabs();
+            } else {
+                document.getElementById('userDashboard').classList.remove('hidden');
+                loadActiveLabsForUser();
+            }
+
+            console.log('Logged in as:', username, 'Role:', userRole);
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (keycloak && keycloak.token) {
+                headers['Authorization'] = `Bearer ${keycloak.token}`;
+            }
+
+            const options = {
+                method,
+                headers
+            };
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.kongUrl}${endpoint}`, options);
+                
+                if (response.status === 403) {
+                    showMessage('Access denied. Admin role required.', 'error');
+                    throw new Error('Forbidden');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        async function loadTemplates() {
+            try {
+                const templates = await apiCall('/lab/api/labs');
+                const container = document.getElementById('labTemplates');
+                container.innerHTML = '';
+
+                const templateCount = Object.keys(templates).length;
+                document.getElementById('templatesCount').textContent = templateCount;
+
+                for (const [id, template] of Object.entries(templates)) {
+                    if (id === 'custom') continue; // Skip custom for now
+                    
+                    const card = document.createElement('div');
+                    card.className = 'lab-card';
+                    card.innerHTML = `
+                        <h4>${template.name}</h4>
+                        <p>${template.description}</p>
+                        <button class="btn btn-success" onclick="createLab('${id}')">
+                            🚀 Start Lab
+                        </button>
+                    `;
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                document.getElementById('labTemplates').innerHTML = 
+                    '<p style="color: #ff6b6b;">Failed to load templates</p>';
+            }
+        }
+
+        async function loadActiveLabs() {
+            try {
+                const labs = await apiCall('/lab/api/active-labs');
+                const container = document.getElementById('activeLabs');
+                container.innerHTML = '';
+
+                const labCount = Object.keys(labs).length;
+                document.getElementById('activeLabsCount').textContent = labCount;
+
+                if (labCount === 0) {
+                    container.innerHTML = '<p style="color: #888; text-align: center;">No active labs</p>';
+                    return;
+                }
+
+                for (const [id, lab] of Object.entries(labs)) {
+                    const item = document.createElement('div');
+                    item.className = 'lab-item';
+                    
+                    const minutes = Math.floor(lab.remaining_seconds / 60);
+                    const seconds = lab.remaining_seconds % 60;
+                    
+                    item.innerHTML = `
+                        <div>
+                            <strong>${lab.subdomain}</strong><br>
+                            <a href="${lab.url}" target="_blank" class="lab-url">${lab.url}</a>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="timer">⏱️ ${minutes}m ${seconds}s</span><br>
+                            <button class="btn btn-danger" onclick="stopLab('${id}')" style="margin-top: 0.5rem;">
+                                Stop
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                }
+            } catch (error) {
+                document.getElementById('activeLabs').innerHTML = 
+                    '<p style="color: #ff6b6b;">Failed to load active labs</p>';
+            }
+        }
+
+        async function loadActiveLabsForUser() {
+            try {
+                const labs = await apiCall('/lab/api/active-labs');
+                const container = document.getElementById('userActiveLabs');
+                container.innerHTML = '';
+
+                const labCount = Object.keys(labs).length;
+
+                if (labCount === 0) {
+                    container.innerHTML = '<p style="color: #888; text-align: center;">No active labs</p>';
+                    return;
+                }
+
+                for (const [id, lab] of Object.entries(labs)) {
+                    const item = document.createElement('div');
+                    item.className = 'lab-item';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <strong>${lab.subdomain}</strong><br>
+                            <a href="${lab.url}" target="_blank" class="lab-url">${lab.url}</a>
+                        </div>
+                        <div>
+                            <span style="color: #888;">View Only</span>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                }
+            } catch (error) {
+                document.getElementById('userActiveLabs').innerHTML = 
+                    '<p style="color: #ff6b6b;">Failed to load active labs</p>';
+            }
+        }
+
+        async function createLab(templateId) {
+            showMessage('Creating lab...', 'success');
+            
+            try {
+                const result = await apiCall('/lab/api/start-lab', 'POST', {
+                    template: templateId,
+                    duration_minutes: 60
+                });
+
+                if (result.success) {
+                    showMessage(`Lab created! URL: ${result.url}`, 'success');
+                    loadActiveLabs();
+                } else {
+                    showMessage(`Failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to create lab. Admin access required.', 'error');
+            }
+        }
+
+        async function stopLab(labId) {
+            if (!confirm('Are you sure you want to stop this lab?')) return;
+
+            try {
+                const result = await apiCall(`/lab/api/stop-lab/${labId}`, 'POST');
+                
+                if (result.success) {
+                    showMessage('Lab stopped successfully', 'success');
+                    loadActiveLabs();
+                } else {
+                    showMessage(`Failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to stop lab', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            
+            setTimeout(() => {
+                msg.classList.remove('show');
+            }, 5000);
+        }
+
+        // Auto-refresh active labs every 30 seconds
+        setInterval(() => {
+            if (keycloak && keycloak.authenticated) {
+                if (userRole === 'admin') {
+                    loadActiveLabs();
+                } else {
+                    loadActiveLabsForUser();
+                }
+            }
+        }, 30000);
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initKeycloak);
+    </script>
+</body>
+</html>

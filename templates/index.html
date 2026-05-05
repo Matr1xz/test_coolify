@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberLab - Lab Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --dark-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        .navbar {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.15);
+        }
+        
+        .card-title {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .card-text {
+            color: var(--text-secondary);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-hover), #7c3aed);
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #16a34a);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .active-lab-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .timer-badge {
+            font-size: 1.1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .timer-badge.warning {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .lab-url {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', monospace;
+            word-break: break-all;
+        }
+        
+        .lab-url a {
+            color: #a5b4fc;
+            text-decoration: none;
+        }
+        
+        .lab-url a:hover {
+            color: #818cf8;
+            text-decoration: underline;
+        }
+        
+        .spinner-border {
+            width: 1.2rem;
+            height: 1.2rem;
+        }
+        
+        .section-title {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .form-control, .form-select {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 12px 16px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: var(--primary-color);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+        }
+        
+        .alert-info {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success-color);
+        }
+        
+        .status-deploying {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+        
+        #noActiveLabs {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            color: var(--primary-color);
+        }
+        
+        .custom-repo-input {
+            display: none;
+        }
+        
+        .custom-repo-input.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-halved me-2"></i>CyberLab
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="text-secondary me-3">
+                    <i class="fas fa-clock me-1"></i>
+                    <span id="currentTime"></span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Alert container -->
+        <div id="alertContainer"></div>
+
+        <!-- Start New Lab Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="section-title">
+                    <i class="fas fa-rocket me-2"></i>Khởi tạo Lab mới
+                </h2>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- Lab Templates -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">SQL Injection Lab</h5>
+                                <small class="text-secondary">Basic Level</small>
+                            </div>
+                        </div>
+                        <p class="card-text">Học các kỹ thuật SQL Injection cơ bản, bypass authentication và khai thác database.</p>
+                        <button class="btn btn-primary w-100" onclick="startLab('sqli_basic')">
+                            <i class="fas fa-play me-2"></i>Start Lab
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">XSS Lab</h5>
+                                <small class="text-secondary">Basic Level</small>
+                            </div>
+                        </div>
+                        <p class="card-text">Tìm hiểu về Cross-Site Scripting, reflected XSS, stored XSS và DOM-based XSS.</p>
+                        <button class="btn btn-primary w-100" onclick="startLab('xss_basic')">
+                            <i class="fas fa-play me-2"></i>Start Lab
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">Custom Lab</h5>
+                                <small class="text-secondary">Your Repository</small>
+                            </div>
+                        </div>
+                        <p class="card-text">Deploy lab từ GitHub repository tùy chỉnh của bạn.</p>
+                        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#customLabModal">
+                            <i class="fas fa-plus me-2"></i>Custom Lab
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Labs Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="section-title">
+                    <i class="fas fa-server me-2"></i>Labs đang hoạt động
+                    <button class="btn btn-sm btn-outline-light ms-3" onclick="refreshActiveLabs()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </h2>
+            </div>
+        </div>
+
+        <div id="activeLabsContainer">
+            <div id="noActiveLabs">
+                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                <p>Chưa có lab nào đang chạy</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Lab Modal -->
+    <div class="modal fade" id="customLabModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--card-bg); border: 1px solid rgba(99, 102, 241, 0.3);">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-github me-2"></i>Deploy Custom Lab
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customLabForm">
+                        <div class="mb-3">
+                            <label class="form-label">GitHub Repository URL *</label>
+                            <input type="url" class="form-control" id="gitRepo" 
+                                   placeholder="https://github.com/username/repo.git" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Branch</label>
+                            <input type="text" class="form-control" id="gitBranch" 
+                                   value="main" placeholder="main">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Thời gian (phút)</label>
+                            <input type="number" class="form-control" id="duration" 
+                                   value="60" min="5" max="240">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="startCustomLab()">
+                        <i class="fas fa-rocket me-2"></i>Deploy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content text-center" style="background: var(--card-bg); border: 1px solid rgba(99, 102, 241, 0.3);">
+                <div class="modal-body py-5">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-white mb-0" id="loadingMessage">Đang khởi tạo lab...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('vi-VN');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Show alert
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.getElementById('alertContainer').appendChild(alertDiv);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Loading modal
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        
+        function showLoading(message = 'Đang xử lý...') {
+            document.getElementById('loadingMessage').textContent = message;
+            loadingModal.show();
+        }
+        
+        function hideLoading() {
+            loadingModal.hide();
+        }
+
+        // Format time remaining
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Start lab
+        async function startLab(template, gitRepo = null, gitBranch = 'main', duration = 60) {
+            showLoading('Đang khởi tạo lab...');
+            
+            try {
+                const payload = {
+                    template: template,
+                    duration_minutes: duration
+                };
+                
+                if (template === 'custom' && gitRepo) {
+                    payload.git_repository = gitRepo;
+                    payload.git_branch = gitBranch;
+                }
+                
+                const response = await fetch('/api/start-lab', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`
+                        <i class="fas fa-check-circle me-2"></i>
+                        Lab đã được khởi tạo thành công!<br>
+                        <small>URL: <a href="${data.url}" target="_blank">${data.url}</a></small><br>
+                        <small>Lab sẽ sẵn sàng trong 1-3 phút.</small>
+                    `, 'success');
+                    refreshActiveLabs();
+                    
+                    // Close custom lab modal if open
+                    const customModal = bootstrap.Modal.getInstance(document.getElementById('customLabModal'));
+                    if (customModal) customModal.hide();
+                } else {
+                    showAlert(`<i class="fas fa-exclamation-circle me-2"></i>${data.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`<i class="fas fa-exclamation-circle me-2"></i>Lỗi: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Start custom lab
+        function startCustomLab() {
+            const gitRepo = document.getElementById('gitRepo').value;
+            const gitBranch = document.getElementById('gitBranch').value || 'main';
+            const duration = parseInt(document.getElementById('duration').value) || 60;
+            
+            if (!gitRepo) {
+                showAlert('<i class="fas fa-exclamation-circle me-2"></i>Vui lòng nhập GitHub repository URL', 'danger');
+                return;
+            }
+            
+            startLab('custom', gitRepo, gitBranch, duration);
+        }
+
+        // Stop lab
+        async function stopLab(labId) {
+            if (!confirm('Bạn có chắc muốn dừng lab này?')) return;
+            
+            showLoading('Đang dừng lab...');
+            
+            try {
+                const response = await fetch(`/api/stop-lab/${labId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('<i class="fas fa-check-circle me-2"></i>Lab đã được dừng thành công!', 'success');
+                    refreshActiveLabs();
+                } else {
+                    showAlert(`<i class="fas fa-exclamation-circle me-2"></i>${data.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`<i class="fas fa-exclamation-circle me-2"></i>Lỗi: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Extend lab
+        async function extendLab(labId) {
+            const additionalMinutes = prompt('Thêm bao nhiêu phút?', '30');
+            if (!additionalMinutes) return;
+            
+            try {
+                const response = await fetch(`/api/extend-lab/${labId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ additional_minutes: parseInt(additionalMinutes) })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`<i class="fas fa-check-circle me-2"></i>Đã gia hạn thêm ${additionalMinutes} phút!`, 'success');
+                    refreshActiveLabs();
+                } else {
+                    showAlert(`<i class="fas fa-exclamation-circle me-2"></i>${data.error}`, 'danger');
+                }
+            } catch (error) {
+                showAlert(`<i class="fas fa-exclamation-circle me-2"></i>Lỗi: ${error.message}`, 'danger');
+            }
+        }
+
+        // Refresh active labs
+        async function refreshActiveLabs() {
+            try {
+                const response = await fetch('/api/active-labs');
+                const labs = await response.json();
+                
+                const container = document.getElementById('activeLabsContainer');
+                
+                if (Object.keys(labs).length === 0) {
+                    container.innerHTML = `
+                        <div id="noActiveLabs">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            <p>Chưa có lab nào đang chạy</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div class="row g-4">';
+                
+                for (const [labId, lab] of Object.entries(labs)) {
+                    const isWarning = lab.remaining_seconds < 300; // Less than 5 minutes
+                    
+                    html += `
+                        <div class="col-12">
+                            <div class="card active-lab-card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="status-badge status-active me-2">
+                                                    <i class="fas fa-circle fa-xs"></i> Active
+                                                </span>
+                                                <span class="timer-badge ${isWarning ? 'warning' : ''}">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span class="lab-timer" data-remaining="${lab.remaining_seconds}">
+                                                        ${formatTime(lab.remaining_seconds)}
+                                                    </span>
+                                                </span>
+                                            </div>
+                                            <div class="lab-url mt-3">
+                                                <i class="fas fa-link me-2"></i>
+                                                <a href="${lab.url}" target="_blank">${lab.url}</a>
+                                                <button class="btn btn-sm btn-outline-light ms-2" onclick="navigator.clipboard.writeText('${lab.url}')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                                            <button class="btn btn-warning btn-sm me-2" onclick="extendLab('${labId}')">
+                                                <i class="fas fa-clock me-1"></i>Gia hạn
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="stopLab('${labId}')">
+                                                <i class="fas fa-stop me-1"></i>Stop Lab
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error refreshing labs:', error);
+            }
+        }
+
+        // Update timers every second
+        setInterval(() => {
+            document.querySelectorAll('.lab-timer').forEach(timer => {
+                let remaining = parseInt(timer.dataset.remaining);
+                if (remaining > 0) {
+                    remaining--;
+                    timer.dataset.remaining = remaining;
+                    timer.textContent = formatTime(remaining);
+                    
+                    // Add warning class if less than 5 minutes
+                    const badge = timer.closest('.timer-badge');
+                    if (remaining < 300 && badge) {
+                        badge.classList.add('warning');
+                    }
+                } else {
+                    // Lab expired, refresh the list
+                    refreshActiveLabs();
+                }
+            });
+        }, 1000);
+
+        // Initial load
+        refreshActiveLabs();
+        
+        // Refresh every 30 seconds
+        setInterval(refreshActiveLabs, 30000);
+    </script>
+</body>
+</html>

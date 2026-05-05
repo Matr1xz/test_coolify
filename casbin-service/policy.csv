@@ -1,0 +1,33 @@
+# Casbin Policy File
+# Format: p, role, path_pattern, method
+# 
+# Roles:
+#   - admin: Full access to lab management APIs
+#   - user: Limited access (view only)
+#   - anonymous: No access to protected APIs
+
+# ============== ADMIN POLICIES ==============
+# Admin can do everything on lab APIs
+p, admin, /lab/*, GET
+p, admin, /lab/*, POST
+p, admin, /lab/*, PUT
+p, admin, /lab/*, DELETE
+
+# Admin can access all API endpoints  
+p, admin, /api/*, GET
+p, admin, /api/*, POST
+p, admin, /api/*, PUT
+p, admin, /api/*, DELETE
+
+# ============== USER POLICIES ==============
+# Users can only view labs, not create/delete
+p, user, /lab/api/labs, GET
+p, user, /lab/api/active-labs, GET
+p, user, /api/labs, GET
+p, user, /api/active-labs, GET
+
+# ============== PUBLIC POLICIES ==============
+# Health check endpoints (public)
+p, anonymous, /health, GET
+p, user, /health, GET
+p, admin, /health, GET
